@@ -12,6 +12,11 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static('public'));
 
+// Serve index.html for root URL
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
 const botManager = new BotManager();
 let currentTournament = null;
 let tournamentActive = false;
@@ -26,7 +31,7 @@ function requireHostAuth(req, res, next) {
     next();
 }
 
-const server = app.listen(port, () => {
+const server = app.listen(port, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${port}`);
 });
 
