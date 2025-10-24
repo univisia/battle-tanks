@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Tanks Lobby</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="lobby-page">
+    <div class="container mt-5">
+        <h1 class="mb-4">Battle Tanks Lobby</h1>
+        
+        <p id="roundStatus" class="mb-3"></p>
+        <h2>Active Bots</h2>
+        <ul id="teamsList" class="list-group">
+            <!-- Bots will be loaded here -->
+        </ul>
+        <div class="d-flex justify-content-between mt-3">
+            <a id="joinLink" href="/join.html" class="btn btn-warning">Join the Battle</a>
+            <div id="hostControls" style="display: none;">
+                <button id="addBotBtn" class="btn btn-primary me-2">Add Bot</button>
+                <button id="startRoundBtn" class="btn btn-success me-2">Start Tournament</button>
+                <button id="pauseBtn" class="btn btn-warning me-2" style="display: none;">Pause Tournament</button>
+                <button id="resumeBtn" class="btn btn-success me-2" style="display: none;">Resume Tournament</button>
+                <button id="stopBtn" class="btn btn-danger" style="display: none;">Stop Tournament</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="setUrlModal" tabindex="-1" aria-labelledby="setUrlModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="setUrlModalLabel">Set Action URL for <span id="modalBotName"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalPassword" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="modalPassword">
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalUrl" class="form-label">Action URL</label>
+                        <input type="url" class="form-control" id="modalUrl">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-warning" id="submitUrl">Set URL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bot Modal -->
+    <div class="modal fade" id="addBotModal" tabindex="-1" aria-labelledby="addBotModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBotModalLabel">Add Bot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="strategySelect" class="form-label">Select Strategy</label>
+                        <select class="form-select" id="strategySelect">
+                            <option value="attack">Attack</option>
+                            <option value="dodge">Dodge</option>
+                            <option value="slow">Slow</option>
+                            <option value="error">Error</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="botColor" class="form-label">Color</label>
+                        <select class="form-select" id="botColor">
+                            <option value="red">Red</option>
+                            <option value="blue">Blue</option>
+                            <option value="green">Green</option>
+                            <option value="yellow">Yellow</option>
+                            <option value="purple">Purple</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitAddBot">Add Bot</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rules Section -->
+    <div class="container mt-5">
+        <h2>Rules</h2>
+        <ol>
+            <li>Teams are competing one against another. 
+                Each team operate two tanks and the goal is to maximize the tournament score as a team (the difference between kills and deaths).</li>
+            <li>Teams register their bots by choosing a team color, bot name, and password. The password is used to set the bot's
+                action URL.</li>
+            <li>Each match in a tournament is a team match and continues until only tanks from one team are left or time runs out.</li>
+            <li>After each match, the system waits a few seconds before starting the next one automatically.</li>
+            <li>Each match takes place on a square battlefield with randomly generated obstacles:
+                water (tanks cannot pass, but bullets can) and walls (tanks and bullets cannot pass through).
+                Dead tanks also act as obstacles similarly to walls.</li>
+            <li>Power-ups spawn randomly on the map. There are three types:
+                <ul>
+                    <li>Shield: Protects the tank from being hit by bullets.</li>
+                    <li>Stealth: Makes the tank invisible to enemy bots in the game state.</li>
+                    <li>Missile: Causes bullets fired by the tank to home in on nearby enemies.</li>
+                </ul>
+                Tanks can pick up power-ups by moving onto them. Power-ups last for a limited time and expire automatically.
+            </li>
+            <li>Tank starting points and directions are random but they are not placed on top of any obstacles.</li>
+            <li>Once shot, bullets move twice as fast as tanks.</li>
+            <li>The game runs in short time steps called ticks. On each tick, the system asks all bots for their next action and
+                then performs them in random order.</li>
+            <li>Each request includes current game state - showing your tank, visible enemies, bullets, walls, and water
+                within your fog radius.</li>
+            <li>Each bot has 1 second to respond with an action. If it doesn't or fails, it will just "wait" that tick.</li>
+            <li>A valid response is a JSON object with two fields: "action" (can be "move", "aim", or "shoot") and "direction"
+                (can be "N", "E", "S", or "W").</li>
+        </ol>
+
+        <h3>Sample JSON</h3>
+        <p><strong>Input:</strong></p>
+        <pre><code>{"myTank":{"x":1,"y":7,"dir":"E","color":"blue","powerUp":{"type":"stealth","expiry":4}},"tanks":[{"x":3,"y":8,"dir":"E","color":"red","powerUp":null}],"bullets":[],"walls":[{"x":5,"y":11},{"x":6,"y":11},{"x":7,"y":11},{"x":8,"y":11},{"x":9,"y":11},{"x":10,"y":11},{"x":3,"y":4},{"x":3,"y":5},{"x":3,"y":6},{"x":3,"y":7},{"x":5,"y":2},{"x":5,"y":3},{"x":5,"y":4},{"x":5,"y":5},{"x":6,"y":9},{"x":7,"y":9},{"x":8,"y":9},{"x":9,"y":9},{"x":10,"y":9},{"x":11,"y":9},{"x":6,"y":1},{"x":6,"y":2},{"x":6,"y":3},{"x":6,"y":4},{"x":6,"y":5},{"x":6,"y":6},{"x":6,"y":7}],"water":[{"x":12,"y":8},{"x":12,"y":9},{"x":12,"y":10},{"x":12,"y":11},{"x":12,"y":12},{"x":12,"y":13},{"x":5,"y":5},{"x":6,"y":5},{"x":7,"y":5},{"x":8,"y":5},{"x":9,"y":5},{"x":2,"y":5},{"x":2,"y":6},{"x":2,"y":7},{"x":2,"y":8},{"x":2,"y":9},{"x":9,"y":14},{"x":10,"y":14},{"x":11,"y":14},{"x":12,"y":14},{"x":13,"y":14},{"x":14,"y":14},{"x":12,"y":4},{"x":13,"y":4}],"powerUps":[{"x":0,"y":11,"type":"missile"}]}</code></pre>
+        <p><strong>Output examples:</strong></p>
+        <pre><code>{ "action": "aim", "direction": "S" }
+{ "action": "move", "direction": "W" }
+{ "action": "shoot" }</code></pre>
+    </div>
+
+    <script>
+        const hostToken = localStorage.getItem('hostToken');
+        if (hostToken) {
+            document.getElementById('hostControls').style.display = 'block';
+        }
+
+        let currentTeam;
+
+        async function loadStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                document.getElementById('roundStatus').textContent = data.tournamentActive ? (data.paused ? 'Tournament paused' : 'Tournament is active') : 'Tournament not active';
+                document.getElementById('joinLink').style.display = data.tournamentActive ? 'none' : 'inline-block';
+                document.getElementById('startRoundBtn').style.display = data.tournamentActive ? 'none' : 'inline-block';
+                document.getElementById('pauseBtn').style.display = (data.tournamentActive && !data.paused) ? 'inline-block' : 'none';
+                document.getElementById('resumeBtn').style.display = (data.tournamentActive && data.paused) ? 'inline-block' : 'none';
+                document.getElementById('stopBtn').style.display = data.tournamentActive ? 'inline-block' : 'none';
+                loadTeams(data.bots);
+            } catch (error) {
+                console.error('Error loading status:', error);
+            }
+        }
+
+        async function loadTeams(bots) {
+            const teamsList = document.getElementById('teamsList');
+            teamsList.innerHTML = '';
+            bots.forEach(bot => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex align-items-center';
+                
+                const colorSpan = document.createElement('span');
+                colorSpan.style.display = 'inline-block';
+                colorSpan.style.width = '20px';
+                colorSpan.style.height = '20px';
+                colorSpan.style.backgroundColor = bot.color;
+                colorSpan.style.border = '1px solid black';
+                colorSpan.style.marginRight = '10px';
+                li.appendChild(colorSpan);
+                
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = bot.name + (bot.hasUrl ? ' (URL set)' : '');
+                nameSpan.className = 'me-auto';
+                li.appendChild(nameSpan);
+                
+                const setUrlBtn = document.createElement('button');
+                setUrlBtn.textContent = 'Set URL';
+                setUrlBtn.className = 'btn btn-warning btn-sm ms-2';
+                setUrlBtn.onclick = () => setUrl(bot.name);
+                li.appendChild(setUrlBtn);
+                
+                if (hostToken) {
+                    const removeBtn = document.createElement('button');
+                    removeBtn.textContent = 'Remove';
+                    removeBtn.className = 'btn btn-danger btn-sm ms-2';
+                    removeBtn.onclick = () => removeBot(bot.name);
+                    li.appendChild(removeBtn);
+                }
+                
+                teamsList.appendChild(li);
+            });
+        }
+
+        function setUrl(botName) {
+            currentTeam = botName;
+            document.getElementById('modalBotName').textContent = botName;
+            document.getElementById('modalPassword').value = '';
+            document.getElementById('modalUrl').value = '';
+            new bootstrap.Modal(document.getElementById('setUrlModal')).show();
+        }
+
+        async function removeBot(botName) {
+            if (!confirm(`Are you sure you want to remove ${botName}?`)) {
+                return;
+            }
+            try {
+                const response = await fetch('/remove-bot', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': hostToken
+                    },
+                    body: JSON.stringify({ botName })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    loadStatus();
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error removing bot');
+            }
+        }
+
+        document.getElementById('submitUrl').onclick = async () => {
+            const password = document.getElementById('modalPassword').value;
+            const actionUrl = document.getElementById('modalUrl').value;
+            if (!password || !actionUrl) {
+                alert('Please fill in all fields');
+                return;
+            }
+            try {
+                const response = await fetch('/set-url', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ botName: currentTeam, password, actionUrl })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('setUrlModal')).hide();
+                    loadStatus();
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error setting URL');
+            }
+        };
+
+        document.getElementById('startRoundBtn').onclick = async () => {
+            try {
+                const response = await fetch('/start-tournament', { 
+                    method: 'POST',
+                    headers: {
+                        'Authorization': hostToken
+                    }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    window.open('/tournament.html', '_blank');
+                    loadStatus(); // Refresh status
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error starting tournament');
+            }
+        };
+
+        document.getElementById('pauseBtn').onclick = async () => {
+            try {
+                const response = await fetch('/pause-tournament', { 
+                    method: 'POST',
+                    headers: {
+                        'Authorization': hostToken
+                    }
+                });
+                if (response.ok) {
+                    loadStatus(); // Refresh status
+                } else {
+                    const data = await response.json();
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error pausing tournament');
+            }
+        };
+
+        document.getElementById('resumeBtn').onclick = async () => {
+            try {
+                const response = await fetch('/resume-tournament', { 
+                    method: 'POST',
+                    headers: {
+                        'Authorization': hostToken
+                    }
+                });
+                if (response.ok) {
+                    loadStatus(); // Refresh status
+                } else {
+                    const data = await response.json();
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error resuming tournament');
+            }
+        };
+
+        document.getElementById('stopBtn').onclick = async () => {
+            try {
+                const response = await fetch('/stop-tournament', { 
+                    method: 'POST',
+                    headers: {
+                        'Authorization': hostToken
+                    }
+                });
+                if (response.ok) {
+                    loadStatus(); // Refresh status
+                } else {
+                    const data = await response.json();
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error stopping tournament');
+            }
+        };
+
+        document.getElementById('addBotBtn').onclick = () => {
+            new bootstrap.Modal(document.getElementById('addBotModal')).show();
+        };
+
+        document.getElementById('submitAddBot').onclick = async () => {
+            const strategy = document.getElementById('strategySelect').value;
+            const color = document.getElementById('botColor').value;
+            try {
+                const response = await fetch('/add-bot', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': hostToken
+                    },
+                    body: JSON.stringify({ strategy, color })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    bootstrap.Modal.getInstance(document.getElementById('addBotModal')).hide();
+                    loadStatus();
+                } else {
+                    alert(data.error);
+                }
+            } catch (error) {
+                alert('Error adding bot');
+            }
+        };
+
+        // Load status on page load
+        loadStatus();
+
+        // Refresh every 5 seconds
+        setInterval(loadStatus, 5000);
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

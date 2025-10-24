@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Battle Tanks Tournament</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-fluid mt-3">
+        <h1 class="mb-4">Battle Tanks Tournament</h1>
+        <div style="display: flex;">
+            <div>
+                <h2 id="gameNumber">Game #1</h2>
+                <div id="game">
+                    <div id="field"></div>
+                </div>
+            </div>
+            <div style="flex: 1; margin-left: 20px; max-width: 700px">
+                <h2>Bot Stats</h2>
+                <table id="statsTable" class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Bot</th>
+                            <th>Score</th>
+                            <th>Kills</th>
+                            <th>Deaths</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Bots will be loaded here -->
+                    </tbody>
+                </table>
+                <h2>Deployments</h2>
+                <div id="deployments" style="height: 200px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+                    <!-- Deployments will be listed here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js"></script>
+</body>
+</html>

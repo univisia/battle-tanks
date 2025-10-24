@@ -1,0 +1,192 @@
+#field {
+    display: grid;
+    grid-template-columns: repeat(15, 40px);
+    grid-template-rows: repeat(15, 40px);
+    gap: 0px;
+    background-color: black;
+    border: 2px solid #8B4513; /* SaddleBrown border */
+}
+
+.cell {
+    width: 40px;
+    height: 40px;
+    border: 0px solid #555;
+    position: relative;
+    background-color: #F2E8DA;
+}
+
+.tank {
+    width: 30px;
+    height: 30px;
+    background-image: url('img/tank_green.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    transform-origin: center;
+}
+
+.tank.red {
+    background-image: url('img/tank_red.png');
+}
+
+.tank.blue {
+    background-image: url('img/tank_blue.png');
+}
+
+.tank.green {
+    background-image: url('img/tank_green.png');
+}
+
+.tank.yellow {
+    background-image: url('img/tank_yellow.png');
+}
+
+.tank.purple {
+    background-image: url('img/tank_purple.png');
+}
+
+.tank.shield::before {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid orange;
+    background: radial-gradient(circle, orange, #ff4500);
+    top: 10px;
+    left: 7px;
+    animation: shieldPulse 0.5s infinite;
+}
+
+@keyframes shieldPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.tank.stealth {
+    opacity: 50%;
+    animation: stealthFlicker 0.5s infinite alternate;
+}
+
+@keyframes stealthFlicker {
+    0% { opacity: 0.4; }
+    100% { opacity: 0.6; }
+}
+
+.tank.missile::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 15px;
+    background: linear-gradient(to bottom, red, #8b0000);
+    top: 0;
+    left: 14px;
+    animation: missileGlow 0.5s infinite alternate;
+}
+
+@keyframes missileGlow {
+    0% { opacity: 1; }
+    100% { opacity: 0.5; }
+}
+
+.bullet {
+    position: absolute;
+    width: 4px;
+    height: 8px;
+    border-radius: 50% 50% 20% 20%;
+    left: 18px;
+    top: 16px;
+    transform-origin: center;
+}
+
+.bullet.red {
+    background: radial-gradient(circle at 50% 20%, #F44336, #B71C1C);
+    box-shadow: 0 0 8px #B71C1C;
+}
+
+.bullet.blue {
+    background: radial-gradient(circle at 50% 20%, #2196F3, #0D47A1);
+    box-shadow: 0 0 8px #0D47A1;
+}
+
+.bullet.green {
+    background: radial-gradient(circle at 50% 20%, #8BC34A, #2E7D32);
+    box-shadow: 0 0 8px #2E7D32;
+}
+
+.bullet.yellow {
+    background: radial-gradient(circle at 50% 20%, #FFEB3B, #FBC02D);
+    box-shadow: 0 0 8px #FBC02D;
+}
+
+.bullet.purple {
+    background: radial-gradient(circle at 50% 20%, #9C27B0, #4A148C);
+    box-shadow: 0 0 8px #4A148C;
+}
+
+.bullet.missile {
+    animation: missileGlow 0.5s infinite alternate;
+}
+
+.fire {
+    position: absolute;
+    width: 24px;
+    height: 32px;
+    background-image: url('img/fire.gif');
+    background-size: contain;
+    background-repeat: no-repeat;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -60%);
+}
+
+.wall {
+    background-image: url('img/brick_wall.jpg');
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.water {
+    background-image: url('img/water.jpg');
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.powerup {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    top: 4px;
+    left: 4px;
+}
+
+.powerup.shield {
+    background-image: url('img/powerup_shield.png');
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.powerup.stealth {
+    background-image: url('img/powerup_stealth.png');
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 8px;
+}
+
+.powerup.missile {
+    background-image: url('img/powerup_missile.png');
+    background-size: auto 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    width: 40px;
+    height: 40px;
+    top: 0;
+    left: 0;
+}
