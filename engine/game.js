@@ -176,8 +176,6 @@ class Game {
             const bot = this.bots[tank.id];
             const payload = this.getGameState(tank);
 
-            console.log(JSON.stringify(payload));
-            
             const fetchPromise = fetch(bot.actionUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
