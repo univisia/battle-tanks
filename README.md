@@ -1,7 +1,7 @@
 # Project Setup
 
 ## Prerequisites
-- [Node.js](https://nodejs.org/) (v16 or later recommended)
+- [Node.js](https://nodejs.org/) (v20 or later recommended)
 - npm (comes with Node.js)
 
 ## Getting Started
